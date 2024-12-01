@@ -7,10 +7,9 @@ Desc:
 """
 
 """
-Ideas: Have Coaches, Offense, Defense, SP_Teams all be searchable with an Entry & search Button. 
-Keywords will call the classes and display the results.
+Ideas:
 
-Player information comes from clickable button with their picture on it.
+Player information comes from clickable button.
 
 
 Make it home & away color scheme with light and dark mode?
@@ -25,6 +24,7 @@ ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("green")
 
 # Classes
+
 class GUI():
     def __init__(self):
       
@@ -50,33 +50,57 @@ class GUI():
         self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Categories:", font=ctk.CTkFont(size=25))
         self.logo_label.grid(row=1, column=0, padx=20, pady=(5, 10))
 
-        self.offense_button = ctk.CTkButton(self.sidebar_frame, text="Offense", fg_color="#203731", font=ctk.CTkFont(size=20), command=offense.o_players)
+        self.offense_button = ctk.CTkButton(self.sidebar_frame, text="Offense", fg_color="#203731", font=ctk.CTkFont(size=20), command=self.o_positions)
         self.offense_button.grid(row=2, column=0, padx=20, pady=10)
 
-        self.defense_button = ctk.CTkButton(self.sidebar_frame, text="Defense", fg_color="#203731", font=ctk.CTkFont(size=20), command=defense.d_players)
+        self.defense_button = ctk.CTkButton(self.sidebar_frame, text="Defense", fg_color="#203731", font=ctk.CTkFont(size=20), command=self.d_positions)
         self.defense_button.grid(row=3, column=0, padx=20, pady=10)
 
-        self.spt_button = ctk.CTkButton(self.sidebar_frame, text="Special Teams", fg_color="#203731", font=ctk.CTkFont(size=20), command=sp_teams.sp_players)
+        self.spt_button = ctk.CTkButton(self.sidebar_frame, text="Special Teams", fg_color="#203731", font=ctk.CTkFont(size=20), command=self.sp_positions)
         self.spt_button.grid(row=4, column=0, padx=20, pady=10)
         
-        self.coaches_button = ctk.CTkButton(self.sidebar_frame, text="Coaching Staff", fg_color="#203731", font=ctk.CTkFont(size=20), command=coaches.coaching_staff)
+        self.coaches_button = ctk.CTkButton(self.sidebar_frame, text="Coaching Staff", fg_color="#203731", font=ctk.CTkFont(size=20), command=self.coaches_positions)
         self.coaches_button.grid(row=5, column=0, padx=20, pady=10)
         
+        # Cool feature taken from a CTk example.
         self.appearance_mode_label = ctk.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
         self.appearance_mode_label.grid(row=7, column=0, padx=20, pady=(10, 0))
         self.appearance_mode_optionemenu = ctk.CTkOptionMenu(self.sidebar_frame, values=["System", "Light", "Dark"], command=self.change_appearance_mode_event)
         self.appearance_mode_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 10))
 
+        # Segmented Button config
+        self.frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        self.frame.grid(row=0, column=1, sticky="nsew")
+        self.frame.grid_columnconfigure(0, weight=1)
+        self.frame.grid_rowconfigure(1, weight=1)
+
+        self.seg_button_1 = ctk.CTkSegmentedButton(self.frame, state="disabled", fg_color= "#FFB612", selected_color="#203731", font=ctk.CTkFont(size=20, weight="bold"))
+        self.seg_button_1.grid(row=0, column=0, padx=(20, 10), pady=(20, 10))
+        self.seg_button_1.configure(values=["Select a category on the left"])
 
         self.root.mainloop()
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)
     
+    def o_positions(self):
+        self.seg_button_1.set(value="Quarterback")
+        self.seg_button_1.configure(values=["Quarterback", "Offensive Tackle", "Guard", "Center", "Wide Receiver", "Running Back", "Tight End"], state="normal", command="")
+            
 
+    def d_positions(self):
+        self.seg_button_1.set(value="Linebacker")
+        self.seg_button_1.configure(values=["Linebacker", "Cornerback", "Defensive Tackle", "Defensive End", "Safety"], state="normal", command="")
 
+    def sp_positions(self):
+        self.seg_button_1.set(value="Place Kicker")
+        self.seg_button_1.configure(values=["Place Kicker", "Punter", "Long Snapper"], state="normal", command="")
 
-class Green_Bay_Packers(GUI):
+    def coaches_positions(self):
+        self.seg_button_1.set(value="Temp")
+        self.seg_button_1.configure(values=["temporary value"], state="normal", command="")
+
+class Green_Bay_Packers():
     pass
 
 class coaches(Green_Bay_Packers):
@@ -94,12 +118,14 @@ class offense(Green_Bay_Packers):
         # print([value for value in players.values()]) # Could use list comprehension as well
 
 class defense(Green_Bay_Packers):
-    def d_players():
+    def d_players_stats(self):
+
         players = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] in 
                    ["Linebacker", "Cornerback", "Defensive Tackle", "Defensive End", "Safety"]}
         
         for value in players.values():
             print(value)
+
 
         # print([value for value in players.values()]) # Could use list comprehension as well
         
@@ -130,7 +156,7 @@ print(r2.status_code)
 
 data = r2.json()["team"]["athletes"] # VERY IMPORTANT accesses 'athletes' sub information within team info.
 
-# Dictionary comprehension detailing id and fullName for players IF they're on 52 man roster.
+# # Dictionary comprehension detailing id and fullName for players IF they're on 52 man roster.
 # athletes = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1"}
 # corners = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] == "Cornerback"} # Example how to access position grups
 # print(corners)
