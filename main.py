@@ -24,6 +24,7 @@ ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("green")
 
 # Classes
+
 class GUI():
     def __init__(self):
         # Creates Window
@@ -76,18 +77,17 @@ class GUI():
         self.seg_button.configure(values=["Select a category on the left"])
 
         # Textbox for stat info
-        self.textbox = ctk.CTkTextbox(self.root, state="disabled") # State breaks the default text
+        self.textbox = ctk.CTkTextbox(self.root, state="disabled", font=ctk.CTkFont(size=35))  # State breaks the default text
         self.textbox.grid(row=0, rowspan=3, column=1, padx=(20, 15), pady=(75, 15), sticky="nsew")
-        self.textbox.insert("0.0", "Testing")
 
-        self.root.mainloop() # Starts the GUI
+        # Starts the GUI
+        self.root.mainloop()
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)
     
     def o_positions(self):
-        self.seg_button.set(value="Quarterback")
-        self.seg_button.configure(values=["Quarterback", "Offensive Tackle", "Guard", "Center", "Wide Receiver", "Running Back", "Tight End"], state="normal", command="")
+        self.seg_button.configure(values=["Quarterback", "Offensive Tackle", "Guard", "Center", "Wide Receiver", "Running Back", "Tight End"], state="normal", command=self.get_seg_value)
 
     def d_positions(self):
         self.seg_button.set(value="Linebacker")
@@ -101,80 +101,88 @@ class GUI():
         self.seg_button.set(value="Temp")
         self.seg_button.configure(values=["temporary value"], state="normal", command="")
 
-
-
-
+    def get_seg_value(self, pos_name):
+        self.seg_value = pos_name
+        offense.o_players(self)
+        return self.seg_value
+    
+    # def update_textbox(self): # Possibly unnecessary
+    #     self.textbox.delete("0.0", "end")
+    #     self.textbox.insert("0.0", id_name)
+    
 # Stat pulling
-class Green_Bay_Packers():
-    pass
+class offense(GUI):
+    def o_players(self):
 
-class coaches(Green_Bay_Packers):
-    def coaching_staff():
-        print("Coaching Staff: ")
+        self.textbox.configure(state="normal")
+        self.textbox.delete("0.0", "end")
+        players = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] == self.seg_value} # Accesses ID's and Names
 
-class offense(Green_Bay_Packers):
-    def o_players():
-        players = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] in 
-                   ["Quarterback", "Offensive Tackle", "Guard", "Center", "Wide Receiver", "Running Back", "Tight End"]}
+        id = [name["id"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] == self.seg_value] # Just accesses ID's so I can create a format to scan many API links
+        print(id)
+
+        for id_name in id:
+            self.textbox.insert("0.0", f"{id_name}\n")
+        self.textbox.configure(state="disabled")
+# Maybe use lambda for accessesing API with format?
+
+
+# class defense(GUI):
+#     def d_players_stats(self):
+
+#         players = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] in 
+#                    ["Linebacker", "Cornerback", "Defensive Tackle", "Defensive End", "Safety"]}
         
-        for value in players.values():
-            print(value) 
+#         for value in players.values():
+#             print(value)
 
-        # print([value for value in players.values()]) # Could use list comprehension as well
 
-class defense(Green_Bay_Packers):
-    def d_players_stats(self):
-
-        players = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] in 
-                   ["Linebacker", "Cornerback", "Defensive Tackle", "Defensive End", "Safety"]}
+#         # print([value for value in players.values()]) # Could use list comprehension as well
         
-        for value in players.values():
-            print(value)
+#     def cornerback():
+#         pass
 
-
-        # print([value for value in players.values()]) # Could use list comprehension as well
+# class sp_teams(GUI):
+#     def sp_players():
+#         players = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] in 
+#                    ["Place kicker", "Punter", "Long Snapper"]}
         
-    def cornerback():
-        pass
+#         for value in players.values():
+#             print(value)
 
-class sp_teams(Green_Bay_Packers):
-    def sp_players():
-        players = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] in 
-                   ["Place kicker", "Punter", "Long Snapper"]}
-        
-        for value in players.values():
-            print(value)
+#         # print([value for value in players.values()]) # Could use list comprehension as well
 
-        # print([value for value in players.values()]) # Could use list comprehension as well
+# class coaches(GUI):
+#     def coaching_staff():
+#         print("Coaching Staff: ")
 
 
-
-# Data Fetching Sites
-Ja_Stats = "https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2024/types/2/teams/9/athletes/3895429/statistics?lang=en&region=us"
+# # Data Fetching Sites
+# Ja_Stats = "https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2024/types/2/teams/9/athletes/3895429/statistics?lang=en&region=us"
 players = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/9?enable=roster,projection,stats"
 
-# Accesses ESPN API website for individual stats & team information.
-# r = requests.get(Ja_Stats)
+# # Accesses ESPN API website for individual stats & team information.
+# # r = requests.get(Ja_Stats)
 
 r2 = requests.get(players)
 print(r2.status_code)
 
 data = r2.json()["team"]["athletes"] # VERY IMPORTANT accesses 'athletes' sub information within team info.
 
-# # Dictionary comprehension detailing id and fullName for players IF they're on 52 man roster.
-# athletes = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1"}
-# corners = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] == "Cornerback"} # Example how to access position grups
-# print(corners)
-# print(athletes)
+# # # Dictionary comprehension detailing id and fullName for players IF they're on 52 man roster.
+# # athletes = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1"}
+# # corners = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] == "Cornerback"} # Example how to access position grups
+# # print(corners)
+# # print(athletes)
 
-# positions = {name["position"]["name"] for name in data if name["status"]["id"] == "1"}
-# print(positions)
+# # positions = {name["position"]["name"] for name in data if name["status"]["id"] == "1"}
+# # print(positions)
 
 
-# with open("json_data.json", "wt") as data_file: 
-#     # Probably temporary, wanted to make sure ALL the data was pulled correctly.
-#     for line in r2.text:
-#         data_file.write(line)
+# # with open("json_data.json", "wt") as data_file: 
+# #     # Probably temporary, wanted to make sure ALL the data was pulled correctly.
+# #     for line in r2.text:
+# #         data_file.write(line)
 
 
 
