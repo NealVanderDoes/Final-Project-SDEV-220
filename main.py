@@ -1,18 +1,13 @@
 """
 Author: Neal Vander Does
-Date: 12/1/2024
+Date: 12/15/2024
 Title: SDEV 220 Final Project: Packer Stats
 Class: SDEV220-50P-IO-202420-I-82X
 Desc: 
-"""
-
-"""
-Ideas:
-
-Player information comes from clickable button.
-
-
-Make it home & away color scheme with light and dark mode?
+    NFL position group stat tracker focused on the 2024 Green Bay Packers football team. 
+    Pulls stats from ESPN so data should be updated weekly sometime after games.
+    Displays stats in a GUI grouped by Offense, Defense, and Special Teams.
+    Further grouping by position is done when a larger category is selected.
 """
 
 # Imports
@@ -24,7 +19,6 @@ ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("green")
 
 # Classes
-
 class GUI():
     def __init__(self):
         # Creates Window
@@ -80,6 +74,7 @@ class GUI():
         # Starts the GUI
         self.root.mainloop()
 
+    # Changes appearance mode based on user selection
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)
     
@@ -112,7 +107,7 @@ class GUI():
 # Stat pulling
 class stats(GUI):
     def offense_stats(self):      
-        # Filter for each offensive position groups stats (all but one oline stat is 0 so I didn't include them)
+        # Filtered stats for each offensive position group (oline doesn't really have stats)
         qb_stats = ["Games Plaed", "Completion Percentage", "Completions", "Interceptions", "Passing Touchdowns", "Passing Yards", "Total Sacks", 
                         "Games Played", "Total Touchdowns", "Total Yards", "Yards Per Game", "Adjusted QBR"]
         wr_te_stats = ["Games Played", "Long Reception", "Receiving First Downs", "Receiving Fumbles", "Receptions", "Total Touchdowns", "Receiving Yards", "Yards Per Game"]
@@ -152,7 +147,7 @@ class stats(GUI):
         return player_stats
     
     def defense_stats(self):
-        # Filter for each defensive position groups stats
+        # Filtered stats for each defensive position group
         lb_stats = ["Forced Fumbles", "Fumbles Recovered", "Interceptions", "Passes Defended", "Quarterback Hits", "Sacks", 
                         "Games Played", "Stuffs", "Tackles For Loss", "Yards Per Game", "Total Tackles"]
         cb_sfty_stats = ["Interceptions", "Passes Defended", "Sacks", "Solo Tackles", "Games Played"]
@@ -188,7 +183,7 @@ class stats(GUI):
         return player_stats
     
     def sp_stats(self):
-        # Filter for each defensive position groups stats
+        # Filtered stats for each special teams position group
         pkicker_stats = ["Games Played", "Average Kickoff Return Yards", "Average Kickoff Yards", "Extra Point Attempts", "Extra Point Percentage", "Extra Point Blocked", 
                          "Field Goal Attempts", "Field Goal Percentage", "Field Goals Blocked", "Long Field Goal Made"]
         punter_stats = ["Games Played", "Punts", "Average Punt Return Yards", "Gross Average Punt Yards", "Long Punt", "Punt Returns", "Punt Return Yards", "Punts Blocked",
@@ -224,61 +219,73 @@ class stats(GUI):
     
 class offense(GUI):
     def o_players(self):
+        # Opens the textbox for text input and resets any text that was there
         self.textbox.configure(state="normal")
         self.textbox.delete("0.0", "end")
+        
+        # Pulls player ids and full name as a key value pair
         self.players = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] == self.seg_value}
 
         # Gets player stats
         player_stats = stats.offense_stats(self)
 
-        # Displays player stats in the GUI textbox
+        # Enters player stats in the GUI textbox
         for player_name, statistics in player_stats.items():
             self.textbox.insert("end", f"{player_name}:\n")
             for stat_name, stat_value in statistics.items():
                 self.textbox.insert("end", f" • {stat_name}: {stat_value}\n")
 
+        # Disables textbox editing so user's cannot edit the stats
         self.textbox.configure(state="disabled")
     
 class defense(GUI):
     def d_players(self):
+        # Opens the textbox for text input and resets any text that was there
         self.textbox.configure(state="normal")
         self.textbox.delete("0.0", "end")
+
+        # Pulls player ids and full name as a key value pair
         self.players = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["name"] == self.seg_value}
 
         # Gets player stats
         player_stats = stats.defense_stats(self)
 
-        # Displays player stats in the GUI textbox
+        # Enters player stats in the GUI textbox
         for player_name, statistics in player_stats.items():
             self.textbox.insert("end", f"{player_name}:\n")
             for stat_name, stat_value in statistics.items():
                 self.textbox.insert("end", f" • {stat_name}: {stat_value}\n")
 
+        # Disables textbox editing so user's cannot edit the stats
         self.textbox.configure(state="disabled")
 
 class sp_teams(GUI):
     def sp_players(self):
+        # Opens the textbox for text input and resets any text that was there
         self.textbox.configure(state="normal")
         self.textbox.delete("0.0", "end")
+
+        # Pulls player ids and full name as a key value pair
         self.players = {name["id"]:name["fullName"] for name in data if name["status"]["id"] == "1" and name["position"]["displayName"] == self.seg_value}
 
         # Gets player stats
         player_stats = stats.sp_stats(self)
 
-        # Displays player stats in the GUI textbox
+        # Enters player stats in the GUI textbox
         for player_name, statistics in player_stats.items():
             self.textbox.insert("end", f"{player_name}:\n")
             for stat_name, stat_value in statistics.items():
                 self.textbox.insert("end", f" • {stat_name}: {stat_value}\n")
 
-        self.textbox.configure(state="disabled")   
+        # Disables textbox editing so user's cannot edit the stats
+        self.textbox.configure(state="disabled")
 
 # Calls the website and pulls data for every player on the 53 man roster
 players = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/9?enable=roster,projection,stats"
 
 req = requests.get(players)
 
-data = req.json()["team"]["athletes"] # VERY IMPORTANT accesses 'athletes' sub information within team info.
+data = req.json()["team"]["athletes"] # VERY IMPORTANT accesses "athletes" sub information within team info from the "players" link
 
 if __name__ == "__main__":
-    GUI() # Calls GUI Class
+    GUI() # Calls GUI Class to create the gui
